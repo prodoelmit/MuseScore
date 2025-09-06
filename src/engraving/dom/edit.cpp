@@ -1612,6 +1612,13 @@ void Score::cmdRemoveTimeSig(TimeSig* ts)
     if (rs) {
         rScore->undoRemoveElement(rs);
     }
+    // Measure can contain mmRest that can have its own timesig. We need to delete it too
+    if (rm->mmRest()) {
+        Segment* mmRestTimesig = rm->mmRest()->findSegment(SegmentType::TimeSig, s->tick());
+        if (mmRestTimesig) {
+            rScore->undoRemoveElement(mmRestTimesig);
+        }
+    }
 
     Measure* pm = m->prevMeasure();
     Fraction ns(pm ? pm->timesig() : Fraction(4, 4));
@@ -2450,15 +2457,15 @@ void Score::cmdFlip()
             flipOnce(artic, [artic]() {
                 ArticulationAnchor articAnchor = artic->anchor();
                 switch (articAnchor) {
-                    case ArticulationAnchor::TOP:
-                        articAnchor = ArticulationAnchor::BOTTOM;
-                        break;
-                    case ArticulationAnchor::BOTTOM:
-                        articAnchor = ArticulationAnchor::TOP;
-                        break;
-                    case ArticulationAnchor::AUTO:
-                        articAnchor = artic->up() ? ArticulationAnchor::BOTTOM : ArticulationAnchor::TOP;
-                        break;
+                case ArticulationAnchor::TOP:
+                    articAnchor = ArticulationAnchor::BOTTOM;
+                    break;
+                case ArticulationAnchor::BOTTOM:
+                    articAnchor = ArticulationAnchor::TOP;
+                    break;
+                case ArticulationAnchor::AUTO:
+                    articAnchor = artic->up() ? ArticulationAnchor::BOTTOM : ArticulationAnchor::TOP;
+                    break;
                 }
                 PropertyFlags pf = artic->propertyFlags(Pid::ARTICULATION_ANCHOR);
                 if (pf == PropertyFlags::STYLED) {
@@ -2491,15 +2498,15 @@ void Score::cmdFlip()
                 ArticulationAnchor articAnchor = ArticulationAnchor(ornament->getProperty(Pid::ARTICULATION_ANCHOR).toInt());
 
                 switch (articAnchor) {
-                    case ArticulationAnchor::TOP:
-                        articAnchor = ArticulationAnchor::BOTTOM;
-                        break;
-                    case ArticulationAnchor::BOTTOM:
-                        articAnchor = ArticulationAnchor::TOP;
-                        break;
-                    case ArticulationAnchor::AUTO:
-                        articAnchor = ornament->up() ? ArticulationAnchor::BOTTOM : ArticulationAnchor::TOP;
-                        break;
+                case ArticulationAnchor::TOP:
+                    articAnchor = ArticulationAnchor::BOTTOM;
+                    break;
+                case ArticulationAnchor::BOTTOM:
+                    articAnchor = ArticulationAnchor::TOP;
+                    break;
+                case ArticulationAnchor::AUTO:
+                    articAnchor = ornament->up() ? ArticulationAnchor::BOTTOM : ArticulationAnchor::TOP;
+                    break;
                 }
                 PropertyFlags pf = ornament->propertyFlags(Pid::ARTICULATION_ANCHOR);
                 if (pf == PropertyFlags::STYLED) {
