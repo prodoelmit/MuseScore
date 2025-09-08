@@ -5380,6 +5380,11 @@ void Score::changeSelectedElementsVoice(voice_idx_t voice)
             ChordRest* dstCR = toChordRest(s->element(dstTrack));
             Chord* dstChord  = nullptr;
 
+            if (dstCR->tuplet()) {
+                // Do not allow changing voices into tuplets
+                continue;
+            }
+
             if (!isOperationValid(score, chord->track(), dstTrack)) {
                 continue;
             }
