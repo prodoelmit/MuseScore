@@ -1833,7 +1833,8 @@ void Score::regroupNotesAndRests(const Fraction& startTick, const Fraction& endT
                             expandVoice(segment, tr);
                         }
                         // the returned gap ends at the measure boundary or at tuplet end
-                        Fraction dd = makeGap(segment, tr, sd, cr->tuplet());
+                        Fraction totalTupletRatio = cr->tuplet()->ticks() / cr->tuplet()->globalTicks();
+                        Fraction dd = makeGap(segment, tr, sd / totalTupletRatio, cr->tuplet());
                         if (dd.isZero()) {
                             break;
                         }
