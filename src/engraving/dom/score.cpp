@@ -5356,6 +5356,18 @@ void Score::changeSelectedElementsVoice(voice_idx_t voice)
             Note* note   = toNote(e);
             Chord* chord = note->chord();
 
+            if (chord)
+            {
+                Fraction tick = chord->tick();
+                Fraction duration = chord->ticks();
+                Fraction globalDuration = chord->globalTicks();
+                LOGI("Looking where to put chord from tick %d/%d with duration %d/%d (global %d/%d)",
+                    tick.numerator(), tick.denominator(),
+                    duration.numerator(),  duration.denominator(),
+                    globalDuration.numerator(), globalDuration.denominator()
+                    );
+            }
+
             // move grace notes with main chord only
             if (chord->isGrace() || chord->isTrillCueNote()) {
                 continue;
@@ -5384,28 +5396,67 @@ void Score::changeSelectedElementsVoice(voice_idx_t voice)
                 continue;
             }
 
+
+            if (dstCR)
+            {
+                Fraction duration = dstCR->ticks();
+                Fraction globalDuration = dstCR->globalTicks();
+                Fraction tick = dstCR->tick();
+                LOGI("Found dstCR at %d/%d with duration %d/%d (global %d/%d)"
+                    , tick.numerator(), tick.denominator(),
+                    duration.numerator(), duration.denominator(),
+                    globalDuration.numerator(), globalDuration.denominator()
+                    );
+            } else
+            {
+                LOGI("Didn't find dstCR in segment");
+            }
+
             // set up destination chord
 
+            Fraction tupletRatio = Fraction(1,1);
+
             if (dstCR && dstCR->type() == ElementType::CHORD && dstCR->globalTicks() == chord->globalTicks()) {
+                LOGI("Chose option 1");
                 // existing chord in destination with correct duration;
                 //   can simply move note in
                 dstChord = toChord(dstCR);
             } else if (dstCR && dstCR->type() == ElementType::REST
                        && dstCR->globalTicks() == chord->globalTicks()) {
+                LOGI("Chose option 2");
                 // existing rest in destination with correct duration;
                 //   replace with chord, then move note in
                 //   this case allows for tuplets, unlike the more general case below
+                tupletRatio = dstCR->ticks() / dstCR->globalTicks();
                 dstChord = Factory::createChord(s);
                 dstChord->setTrack(dstTrack);
-                dstChord->setDurationType(chord->durationType());
-                dstChord->setTicks(chord->ticks());
-                dstChord->setTuplet(dstCR->tuplet());
+                Fraction newTicks = chord->ticks() * tupletRatio;
+                dstChord->setDurationType(newTicks);
+                dstChord->setTicks(newTicks);
+                if (dstCR->tuplet())
+                {
+                    Tuplet* dstTuplet = dstCR->tuplet();
+                    dstChord->setTuplet(dstTuplet);
+                }
                 dstChord->setParent(s);
+                LOGI("Old chord's duration  is %d/%d(global %d/%d)",
+                    chord->ticks().numerator(), chord->ticks().denominator(),
+                    chord->globalTicks().numerator(), chord->globalTicks().denominator()
+                    );
+                LOGI("Old rest's duration  is %d/%d(global %d/%d)",
+                    dstCR->ticks().numerator(), dstCR->ticks().denominator(),
+                    dstCR->globalTicks().numerator(), dstCR->globalTicks().denominator()
+                    );
+                LOGI("New dstChord's duration  is %d/%d(global %d/%d)",
+                        dstChord->ticks().numerator(), dstChord->ticks().denominator(),
+                        dstChord->globalTicks().numerator(), dstChord->globalTicks().denominator()
+                        );
                 score->undoRemoveElement(dstCR);
             } else if (!chord->tuplet()) {
                 // rests or gap in destination
                 //   insert new chord if the rests / gap are long enough
                 //   then move note in
+                LOGI("Chose option 3");
                 ChordRest* pcr = nullptr;
                 ChordRest* ncr = nullptr;
                 for (Segment* s2 = m->first(SegmentType::ChordRest); s2; s2 = s2->next()) {
@@ -5439,6 +5490,9 @@ void Score::changeSelectedElementsVoice(voice_idx_t voice)
                     }
                     score->makeGapVoice(s, dstTrack, chord->actualTicks(), s->tick());
                 }
+            } else
+            {
+                LOGI("No option chosen");
             }
 
             if (!dstChord) {
@@ -5456,6 +5510,23 @@ void Score::changeSelectedElementsVoice(voice_idx_t voice)
             // add new chord if one was created
             if (dstChord != dstCR) {
                 score->undoAddCR(dstChord, m, s->tick());
+            }
+            LOGI("-------");
+            LOGI("After adding note");
+            for (Segment& s: m->segments())
+            {
+                EngravingItem* el = s.elementAt(dstTrack);
+                if (el->isChordRest())
+                {
+                    Fraction duration = toChordRest(el)->ticks();
+                    Fraction globalDuration = toChordRest(el)->globalTicks();
+                    LOGI("Segment at %d/%d :%s\t duration %d/%d (global %d/%d)",
+                        s.tick().numerator(), s.tick().denominator(),
+                        toChordRest(el)->typeName(),
+                        duration.numerator(), duration.denominator(),
+                        globalDuration.numerator(), globalDuration.denominator()
+                        );
+                }
             }
             for (EngravingObject* linked : note->linkList()) {
                 Note* linkedNote = toNote(linked);
