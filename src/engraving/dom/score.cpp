@@ -5415,11 +5415,12 @@ void Score::changeSelectedElementsVoice(voice_idx_t voice)
             // set up destination chord
 
             Fraction tupletRatio = Fraction(1,1);
+            Tuplet* tuplet = nullptr;
             if (dstCR)
             {
                 tupletRatio = dstCR->ticks() / dstCR->globalTicks();
+                tuplet =  dstCR->tuplet();
             }
-            Tuplet* tuplet = dstCR->tuplet();
             Fraction newTicks = chord->globalTicks() * tupletRatio;
 
             if (dstCR && dstCR->type() == ElementType::CHORD && dstCR->globalTicks() == chord->globalTicks()) {
@@ -5470,26 +5471,28 @@ void Score::changeSelectedElementsVoice(voice_idx_t voice)
                 Fraction gapStart = pcr ? pcr->tick() + pcr->actualTicks() : m->tick();
                 Fraction gapEnd   = ncr ? ncr->tick() : m->tick() + m->ticks();
                 Tuplet* startTuplet = pcr ? pcr->tuplet() : nullptr;
-                if (gapStart <= s->tick() && gapEnd >= s->tick() + chord->actualTicks()) {
-                    // big enough gap found
-                    dstChord = Factory::createChord(s);
-                    dstChord->setTrack(dstTrack);
-                    dstChord->setDurationType(newTicks);
-                    dstChord->setTicks(newTicks);
-                    dstChord->setTuplet(startTuplet);
-                    dstChord->setParent(s);
-                    // makeGapVoice will not back-fill an empty voice
-                    if (voice && !dstCR) {
-                        score->expandVoice(s, /*m->first(SegmentType::ChordRest,*/ dstTrack);
-                    }
-                    // if (tuplet)
-                    // {
-                    //     score->makeGap(s, dstTrack, chord->actualTicks(), tuplet, false);
-                    // } else
-                    // {
-                        score->makeGapVoice(s, dstTrack, chord->actualTicks(), s->tick());
-                    // }
-                }
+                score->setChord(s, dstTrack, chord, chord->ticks());
+                score->undoRemoveElement(chord);
+                // if (gapStart <= s->tick() && gapEnd >= s->tick() + chord->actualTicks()) {
+                //     // big enough gap found
+                //     dstChord = Factory::createChord(s);
+                //     dstChord->setTrack(dstTrack);
+                //     dstChord->setDurationType(newTicks);
+                //     dstChord->setTicks(newTicks);
+                //     dstChord->setTuplet(startTuplet);
+                //     dstChord->setParent(s);
+                //     // makeGapVoice will not back-fill an empty voice
+                //     if (voice && !dstCR) {
+                //         score->expandVoice(s, /*m->first(SegmentType::ChordRest,*/ dstTrack);
+                //     }
+                //     // if (tuplet)
+                //     // {
+                //     //     score->makeGap(s, dstTrack, chord->actualTicks(), tuplet, false);
+                //     // } else
+                //     // {
+                //         score->makeGapVoice(s, dstTrack, chord->actualTicks(), s->tick());
+                //     // }
+                // }
             }
 
             if (!dstChord) {

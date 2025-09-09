@@ -1319,7 +1319,7 @@ Fraction Score::makeGap(Segment* segment, track_idx_t track, const Fraction& _sd
                 break;
             }
         }
-        Fraction td(cr->globalTicks()); // or should we use actualTicks?
+        Fraction td(cr->ticks());
 
         // remove tremolo between 2 notes, if present
         if (cr->isChord()) {
@@ -1329,39 +1329,39 @@ Fraction Score::makeGap(Segment* segment, track_idx_t track, const Fraction& _sd
             }
         }
         Tuplet* ltuplet = cr->tuplet();
-        // if (ltuplet != tuplet) {
-        //     //
-        //     // Current location points to the start of a (nested)tuplet.
-        //     // We have to remove the complete tuplet.
-        //
-        //     // get top level tuplet
-        //     while (ltuplet->tuplet()) {
-        //         ltuplet = ltuplet->tuplet();
-        //     }
-        //
-        //     // get last segment of tuplet, drilling down to leaf nodes as necessary
-        //     Tuplet* t = ltuplet;
-        //     while (t->elements().back()->isTuplet()) {
-        //         t = toTuplet(t->elements().back());
-        //     }
-        //     seg = toChordRest(t->elements().back())->segment();
-        //
-        //     // now delete the full tuplet
-        //     td = ltuplet->globalTicks();
-        //     cmdDeleteTuplet(ltuplet, false);
-        //     tuplet = 0;
-        // } else {
+        if (ltuplet != tuplet) {
+            //
+            // Current location points to the start of a (nested)tuplet.
+            // We have to remove the complete tuplet.
+
+            // get top level tuplet
+            while (ltuplet->tuplet()) {
+                ltuplet = ltuplet->tuplet();
+            }
+
+            // get last segment of tuplet, drilling down to leaf nodes as necessary
+            Tuplet* t = ltuplet;
+            while (t->elements().back()->isTuplet()) {
+                t = toTuplet(t->elements().back());
+            }
+            seg = toChordRest(t->elements().back())->segment();
+
+            // now delete the full tuplet
+            td = ltuplet->globalTicks();
+            cmdDeleteTuplet(ltuplet, false);
+            tuplet = 0;
+        } else {
             if (seg != firstSegment || !keepChord) {
                 undoRemoveElement(cr);
             }
             // even if there was a tuplet, we didn't remove it
             ltuplet = 0;
-        // }
+        }
         Fraction timeStretch = cr->staff()->timeStretch(cr->tick());
         nextTick += td / timeStretch;
         if (sd < td) {
             //
-            // we removed too much
+            // we will removed too much
             //
             accumulated = _sd;
             Fraction rd = td - sd;
@@ -4097,8 +4097,9 @@ void Score::cmdSlashRhythm()
 //   setChord
 //    return segment of last created chord
 //---------------------------------------------------------
-static Segment* setChord(Score* score, Segment* segment, track_idx_t track, const Chord* chordTemplate, Fraction dur)
+Segment* Score::setChord(Segment* segment, track_idx_t track, const Chord* chordTemplate, Fraction dur)
 {
+    Score* score = this;
     assert(segment->segmentType() == SegmentType::ChordRest);
 
     Fraction tick = segment->tick();
@@ -4321,7 +4322,7 @@ void Score::cmdRealizeChordSymbols(bool literal, Voicing voicing, HDuration dura
             seg = newCrSeg;
         }
 
-        setChord(this, seg, h->track(), chord, duration);     //add chord using template
+        setChord(seg, h->track(), chord, duration);     //add chord using template
         delete chord;
     }
 }

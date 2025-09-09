@@ -1033,6 +1033,7 @@ public:
     void cmdExchangeVoice(voice_idx_t, voice_idx_t);
     void cmdRemoveEmptyTrailingMeasures();
     void cmdRealizeChordSymbols(bool lit = true, Voicing v = Voicing(-1), HDuration durationType = HDuration(-1));
+    Segment* setChord(Segment* segment, track_idx_t track, const Chord* chordTemplate, Fraction dur);
 
     Measure* firstTrailingMeasure(ChordRest** cr = nullptr);
     ChordRest* cmdTopStaff(ChordRest* cr = nullptr);
