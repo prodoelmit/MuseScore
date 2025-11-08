@@ -26,8 +26,6 @@ set (MIDIIMPORT_SRC
     ${CMAKE_CURRENT_LIST_DIR}/importmidi_lyrics.h
     ${CMAKE_CURRENT_LIST_DIR}/importmidi_meter.cpp
     ${CMAKE_CURRENT_LIST_DIR}/importmidi_meter.h
-    ${CMAKE_CURRENT_LIST_DIR}/importmidi_model.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/importmidi_model.h
     ${CMAKE_CURRENT_LIST_DIR}/importmidi_operation.h
     ${CMAKE_CURRENT_LIST_DIR}/importmidi_operations.cpp
     ${CMAKE_CURRENT_LIST_DIR}/importmidi_operations.h

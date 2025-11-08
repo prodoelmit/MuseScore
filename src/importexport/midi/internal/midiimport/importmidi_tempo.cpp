@@ -96,7 +96,6 @@ void setTempoToScore(Score* score, int tick, double beatsPerSecond)
         tempoText->setXmlText(QString("<sym>metNoteQuarterUp</sym> = %1").arg(tempoInBpm));
         tempoText->setTrack(0);
         segment->add(tempoText);
-        data->hasTempoText = true;          // to show tempo text column in the MIDI import panel
     }
 }
 

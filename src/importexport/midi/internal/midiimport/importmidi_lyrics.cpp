@@ -311,12 +311,7 @@ void setLyricsFromOperations(const QList<MTrack>& tracks)
 
 void setLyricsToScore(QList<MTrack>& tracks)
 {
-    const auto* data = midiImportOperations.data();
-    if (data->processingsOfOpenedFile == 0) {
-        setInitialLyricsFromMidiData(tracks);
-    } else {
-        setLyricsFromOperations(tracks);
-    }
+    setInitialLyricsFromMidiData(tracks);
 }
 
 QList<std::string> makeLyricsListForUI()

@@ -75,8 +75,6 @@ protected:
     void dontSimplify(const char* file)
     {
         auto& opers = midiImportOperations;
-        opers.addNewMidiFile(midiFilePath(file));
-        MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(file));
         auto& data = *opers.data();
 
         data.trackOpers.simplifyDurations.setDefaultValue(false, false);
@@ -90,8 +88,6 @@ protected:
     void noTempoText(const char* file)
     {
         auto& opers = midiImportOperations;
-        opers.addNewMidiFile(midiFilePath(file));
-        MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(file));
         auto& data = *opers.data();
 
         data.trackOpers.showTempoText.setDefaultValue(false);
@@ -102,8 +98,6 @@ protected:
     void staffSplit(const char* file)
     {
         auto& opers = midiImportOperations;
-        opers.addNewMidiFile(midiFilePath(file));
-        MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(file));
         auto& data = *opers.data();
 
         data.trackOpers.doStaffSplit.setDefaultValue(true, false);
@@ -117,8 +111,6 @@ protected:
     void simplification(const char* file)
     {
         auto& opers = midiImportOperations;
-        opers.addNewMidiFile(midiFilePath(file));
-        MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(file));
         auto& data = *opers.data();
 
         data.trackOpers.doStaffSplit.setDefaultValue(false, false);
@@ -132,8 +124,6 @@ protected:
     void voiceSeparation(const char* file, bool simplify = false)
     {
         auto& opers = midiImportOperations;
-        opers.addNewMidiFile(midiFilePath(file));
-        MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(file));
         auto& data = *opers.data();
 
         data.trackOpers.doStaffSplit.setDefaultValue(false, false);
@@ -206,8 +196,6 @@ TEST_F(MidiImportTests, m5) {
 TEST_F(MidiImportTests, quantDotted4th) {
     String midiFile(u"quant_dotted_4th");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     // 1/4 quantization should preserve 4th dotted note
@@ -327,8 +315,6 @@ TEST_F(MidiImportTests, tuplet2Voices3_5Tuplets) {
     // requires 1/32 quantization
     QString midiFile("tuplet_2_voices_3_5_tuplets");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.quantValue.setDefaultValue(MidiOperations::QuantValue::Q_32, false);
@@ -344,8 +330,6 @@ TEST_F(MidiImportTests, tuplet2VoicesTupletNon) {
 TEST_F(MidiImportTests, tuplet3_5_7tuplets) {
     QString midiFile("tuplet_3_5_7_tuplets");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.changeClef.setDefaultValue(false, false);
@@ -376,8 +360,6 @@ TEST_F(MidiImportTests, tupletNonuplet3_4) {
     // requires 1/64 quantization
     QString midiFile("tuplet_nonuplet_3-4");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.quantValue.setDefaultValue(MidiOperations::QuantValue::Q_64, false);
@@ -389,8 +371,6 @@ TEST_F(MidiImportTests, tupletNonuplet4_4) {
     // requires 1/64 quantization
     QString midiFile("tuplet_nonuplet_4-4");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.quantValue.setDefaultValue(MidiOperations::QuantValue::Q_64, false);
@@ -430,8 +410,6 @@ TEST_F(MidiImportTests, tupletTied3_5) {
     // requires 1/32 quantization
     QString midiFile("tuplet_tied_3_5_tuplets");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.quantValue.setDefaultValue(MidiOperations::QuantValue::Q_32, false);
@@ -442,8 +420,6 @@ TEST_F(MidiImportTests, tupletTied3_5_2) {
     // requires 1/32 quantization
     QString midiFile("tuplet_tied_3_5_tuplets2");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.quantValue.setDefaultValue(MidiOperations::QuantValue::Q_32, false);
@@ -509,8 +485,6 @@ TEST_F(MidiImportTests, LHRH_octave) {
 TEST_F(MidiImportTests, swingTriplets) {
     QString midiFile("swing_triplets");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.swing.setDefaultValue(MidiOperations::Swing::SWING, false);
@@ -525,8 +499,6 @@ TEST_F(MidiImportTests, swingTriplets) {
 TEST_F(MidiImportTests, swingShuffle) {
     QString midiFile("swing_shuffle");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.swing.setDefaultValue(MidiOperations::Swing::SHUFFLE, false);
@@ -541,8 +513,6 @@ TEST_F(MidiImportTests, swingShuffle) {
 TEST_F(MidiImportTests, swingClef) {
     QString midiFile("swing_clef");
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFilePath(midiFile));
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFilePath(midiFile));
     auto& data = *opers.data();
 
     data.trackOpers.swing.setDefaultValue(MidiOperations::Swing::SWING, false);
@@ -827,8 +797,6 @@ static void isTupletErrorAllowed(int tupletSumError,
 TEST_F(MidiImportTests, isTupletAllowed) {
     auto& opers = midiImportOperations;
     const QString fileName = "dummy";
-    opers.addNewMidiFile(fileName);
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, fileName);
 
     // special cases
     //
@@ -902,7 +870,6 @@ TEST_F(MidiImportTests, isTupletAllowed) {
 
 TEST_F(MidiImportTests, findTupletNumbers) {
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile("");
     MidiOperations::CurrentTrackSetter setCurrentTrack{ opers, 0 };
     {
         const ReducedFraction barFraction(4, 4);
@@ -1416,8 +1383,6 @@ TEST_F(MidiImportTests, testGuiTracksModel) {
     QString midiFile("perc_drums");
     QString midiFileFullPath = midiFilePath(midiFile);
     auto& opers = midiImportOperations;
-    opers.addNewMidiFile(midiFileFullPath);
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, midiFileFullPath);
 
     std::unique_ptr<engraving::MasterScore> score = importMidi(midiFileFullPath);
     ASSERT_TRUE(score);

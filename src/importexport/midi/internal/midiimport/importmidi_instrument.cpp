@@ -592,29 +592,21 @@ void findInstrumentsForAllTracks(const QList<MTrack>& tracks, bool forceReload)
         instrListOption.clear();
     }
 
-    if (opers.data()->processingsOfOpenedFile == 0 || forceReload) {
-        // create instrument list on MIDI file opening
-        for (const auto& track: tracks) {
-            instrListOption.setValue(track.indexOfOperation,
-                                     findSuitableInstruments(track));
-            if (!instrListOption.value(track.indexOfOperation).empty()) {
-                const int defaultInstrIndex = 0;
-                opers.data()->trackOpers.msInstrIndex.setDefaultValue(defaultInstrIndex);
-            }
+    // Create instrument list
+    for (const auto& track: tracks) {
+        instrListOption.setValue(track.indexOfOperation,
+                                 findSuitableInstruments(track));
+        if (!instrListOption.value(track.indexOfOperation).empty()) {
+            const int defaultInstrIndex = 0;
+            opers.data()->trackOpers.msInstrIndex.setDefaultValue(defaultInstrIndex);
         }
     }
 }
 
 void instrumentTemplatesChanged()
 {
-    QStringList files(midiImportOperations.allMidiFiles());
-    for (const QString& file : std::as_const(files)) {
-        MidiOperations::CurrentMidiFileSetter s(midiImportOperations, file);
-        MidiOperations::FileData* data = midiImportOperations.data();
-        if (data) {
-            findInstrumentsForAllTracks(data->tracks, /* forceReload */ true);
-        }
-    }
+    // This function was for the MIDI import panel UI that no longer exists
+    // Keeping as empty stub for compatibility
 }
 
 void createInstruments(Score* score, QList<MTrack>& tracks)

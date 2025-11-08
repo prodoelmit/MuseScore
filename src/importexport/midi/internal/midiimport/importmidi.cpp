@@ -242,13 +242,11 @@ void quantizeAllTracks(std::multimap<int, MTrack>& tracks,
         // for further usage
         MidiOperations::CurrentTrackSetter setCurrentTrack{ opers, mtrack.indexOfOperation };
 
-        if (opers.data()->processingsOfOpenedFile == 0) {
-            opers.data()->trackOpers.isDrumTrack.setValue(
-                opers.currentTrack(), mtrack.mtrack->drumTrack());
-            if (mtrack.mtrack->drumTrack()) {
-                opers.data()->trackOpers.maxVoiceCount.setValue(
-                    opers.currentTrack(), MidiOperations::VoiceCount::V_1);
-            }
+        opers.data()->trackOpers.isDrumTrack.setValue(
+            opers.currentTrack(), mtrack.mtrack->drumTrack());
+        if (mtrack.mtrack->drumTrack()) {
+            opers.data()->trackOpers.maxVoiceCount.setValue(
+                opers.currentTrack(), MidiOperations::VoiceCount::V_1);
         }
         const auto basicQuant = Quantize::quantValueToFraction(
             opers.data()->trackOpers.quantValue.value(mtrack.indexOfOperation));
@@ -303,10 +301,8 @@ void MTrack::processMeta(int tick, const MidiEvent& mm)
         const std::string text = MidiCharset::fromUchar(data);
 
         auto& opers = midiImportOperations;
-        if (opers.data()->processingsOfOpenedFile == 0) {
-            const int currentTrack = indexOfOperation;
-            opers.data()->trackOpers.staffName.setValue(currentTrack, text);
-        }
+        const int currentTrack = indexOfOperation;
+        opers.data()->trackOpers.staffName.setValue(currentTrack, text);
 
         if (name.isEmpty()) {
             name = MidiCharset::convertToCharset(text);
@@ -761,18 +757,8 @@ std::multimap<int, MTrack> createMTrackList(TimeSigMap* sigmap, const MidiFile* 
         if (hasNotes) {
             ++trackIndex;
             track.hadInitialNotes = true;
-            const auto* data = midiImportOperations.data();
-            if (data->processingsOfOpenedFile > 0) {
-                if (data->trackOpers.doImport.value(trackIndex)) {
-                    track.indexOfOperation = trackIndex;
-                    const int reorderedIndex
-                        = data->trackOpers.trackIndexAfterReorder.value(trackIndex);
-                    tracks.insert({ reorderedIndex, track });
-                }
-            } else {                // if it is an initial track-list query from MIDI import panel
-                track.indexOfOperation = trackIndex;
-                tracks.insert({ trackIndex, track });
-            }
+            track.indexOfOperation = trackIndex;
+            tracks.insert({ trackIndex, track });
         } else {
             track.hadInitialNotes = false;             // it's a tempo track or something else
             tracks.insert({ -1, track });
@@ -874,10 +860,8 @@ void createMeasures(const ReducedFraction& firstTick, ReducedFraction& lastTick,
         ++barCount;               // convert bar index to number of bars
     }
     auto& data = *midiImportOperations.data();
-    if (data.processingsOfOpenedFile == 0) {
-        if (!areNextBarsEqual(score, barCount)) {
-            data.trackOpers.searchPickupMeasure.setValue(false);
-        }
+    if (!areNextBarsEqual(score, barCount)) {
+        data.trackOpers.searchPickupMeasure.setValue(false);
     }
 
     const bool tryDetectPickupMeasure = data.trackOpers.searchPickupMeasure.value();
@@ -911,11 +895,9 @@ void setTrackInfo(MTrack& mt)
 
     const int currentTrack = mt.indexOfOperation;
     const QString instrName = MidiInstr::instrumentName(mt.program, mt.mtrack->drumTrack());
-    if (opers.data()->processingsOfOpenedFile == 0) {
-        opers.data()->trackOpers.midiInstrName.setValue(currentTrack, instrName);
-        // set channel number (from 1): number = index + 1
-        opers.data()->trackOpers.channel.setValue(currentTrack, mt.mtrack->outChannel() + 1);
-    }
+    opers.data()->trackOpers.midiInstrName.setValue(currentTrack, instrName);
+    // set channel number (from 1): number = index + 1
+    opers.data()->trackOpers.channel.setValue(currentTrack, mt.mtrack->outChannel() + 1);
 
     const QString msInstrName = MidiInstr::msInstrName(currentTrack);
     const QString trackInstrName = (msInstrName.isEmpty()) ? instrName : msInstrName;
@@ -1139,28 +1121,21 @@ QList<MTrack> convertMidi(Score* score, const MidiFile* mf)
     auto tracks = createMTrackList(sigmap, mf);
 
     auto& opers = midiImportOperations;
-    if (opers.data()->processingsOfOpenedFile == 0) {         // for newly opened MIDI file
-        MidiChordName::findChordNames(tracks);
-    }
+    MidiChordName::findChordNames(tracks);
 
     lengthenTooShortNotes(tracks);
 
-    if (opers.data()->processingsOfOpenedFile == 0) {         // for newly opened MIDI file
-        opers.data()->trackCount = 0;
-        for (const auto& track: tracks) {
-            if (track.first != -1) {
-                ++opers.data()->trackCount;
-            }
+    opers.data()->trackCount = 0;
+    for (const auto& track: tracks) {
+        if (track.first != -1) {
+            ++opers.data()->trackCount;
         }
-        MidiLyrics::extractLyricsToMidiData(mf);
     }
-    // for newly opened MIDI file - detect if it is a human performance
+    MidiLyrics::extractLyricsToMidiData(mf);
+
+    // Detect if it is a human performance
     // if so - detect beats and set initial time signature
-    if (opers.data()->processingsOfOpenedFile == 0) {
-        Quantize::setIfHumanPerformance(tracks, sigmap);
-    } else {      // user value
-        MidiBeat::setTimeSignature(sigmap);
-    }
+    Quantize::setIfHumanPerformance(tracks, sigmap);
 
     Q_ASSERT_X((opers.data()->trackOpers.isHumanPerformance.value())
                ? Meter::userTimeSigToFraction(opers.data()->trackOpers.timeSigNumerator.value(),
@@ -1172,9 +1147,7 @@ QList<MTrack> convertMidi(Score* score, const MidiFile* mf)
     MidiBeat::adjustChordsToBeats(tracks);
     MChord::mergeChordsWithEqualOnTimeAndVoice(tracks);
 
-    // for newly opened MIDI file
-    if (opers.data()->processingsOfOpenedFile == 0
-        && opers.data()->trackOpers.doStaffSplit.canRedefineDefaultLater()) {
+    if (opers.data()->trackOpers.doStaffSplit.canRedefineDefaultLater()) {
         setLeftRightHandSplit(tracks);
     }
 
@@ -1244,48 +1217,31 @@ Err importMidi(MasterScore* score, const QString& name)
         return Err::FileNotFound;
     }
 
-    auto& opers = midiImportOperations;
-
-    MidiOperations::CurrentMidiFileSetter setCurrentMidiFile(opers, name);
-    if (!opers.hasMidiFile(name)) {
-        opers.addNewMidiFile(name);
+    // Always read from disk - no caching
+    QFile fp(name);
+    if (!fp.open(QIODevice::ReadOnly)) {
+        LOGD("importMidi: file open error <%s>", qPrintable(name));
+        return Err::FileOpenError;
     }
 
-    // Check if file has been modified on disk since last import
-    QFileInfo fileInfo(name);
-    qint64 currentModTime = fileInfo.lastModified().toSecsSinceEpoch();
-    bool needsReload = (opers.data()->processingsOfOpenedFile == 0)
-                       || (opers.data()->fileModificationTime != currentModTime);
-
-    if (needsReload) {
-        QFile fp(name);
-        if (!fp.open(QIODevice::ReadOnly)) {
-            LOGD("importMidi: file open error <%s>", qPrintable(name));
-            return Err::FileOpenError;
-        }
-        MidiFile mf;
-        try {
-            mf.read(&fp);
-        }
-        catch (QString errorText) {
-            if (!MScore::noGui) {
-                MessageBox(score->iocContext()).warning(muse::trc("iex_midi", "Import MIDI"),
-                                                        muse::qtrc("iex_midi", "Import failed: %1").arg(errorText).toStdString(),
-                                                        { MessageBox::Ok });
-            }
-            fp.close();
-            LOGD("importMidi: bad file format");
-            return Err::FileBadFormat;
+    MidiFile mf;
+    try {
+        mf.read(&fp);
+    }
+    catch (QString errorText) {
+        if (!MScore::noGui) {
+            MessageBox(score->iocContext()).warning(muse::trc("iex_midi", "Import MIDI"),
+                                                    muse::qtrc("iex_midi", "Import failed: %1").arg(errorText).toStdString(),
+                                                    { MessageBox::Ok });
         }
         fp.close();
-
-        loadMidiData(mf);
-        opers.setMidiFileData(name, mf);
-        opers.data()->fileModificationTime = currentModTime;
+        LOGD("importMidi: bad file format");
+        return Err::FileBadFormat;
     }
+    fp.close();
 
-    opers.data()->tracks = convertMidi(score, opers.midiFile(name));
-    ++opers.data()->processingsOfOpenedFile;
+    loadMidiData(mf);
+    convertMidi(score, &mf);
 
     return Err::NoError;
 }

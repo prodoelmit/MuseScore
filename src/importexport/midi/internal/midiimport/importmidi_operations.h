@@ -219,18 +219,9 @@ struct HumanBeatData
 
 struct FileData
 {
-    MidiFile midiFile;
-    QList<MTrack> tracks;
-    int processingsOfOpenedFile = 0;
-    qint64 fileModificationTime = 0;
-    bool hasTempoText = false;
-    QByteArray HHeaderData;
-    QByteArray VHeaderData;
     int trackCount = 0;
     Opers trackOpers;
     QString charset = MidiCharset::defaultCharset();
-    // after the user apply MIDI import operations
-    // this value should be set to false
     // tracks of <tick, lyric fragment> from karaoke files
     // QList of lyric tracks - there can be multiple lyric tracks,
     // lyric track count != MIDI track count in general
@@ -245,24 +236,16 @@ public:
     FileData* data();
     const FileData* data() const;
 
-    void addNewMidiFile(const QString& fileName);
     int currentTrack() const;
-    void setMidiFileData(const QString& fileName, const MidiFile& midiFile);
-    void excludeMidiFile(const QString& fileName);
-    bool hasMidiFile(const QString& fileName);
-    const MidiFile* midiFile(const QString& fileName);
-    QStringList allMidiFiles() const;
     void setOperationsFile(const QString& fileName);
 
 private:
     friend class CurrentTrackSetter;
-    friend class CurrentMidiFileSetter;
 
-    QString _currentMidiFile;
     QString _midiOperationsFile;
     int _currentTrack = -1;
 
-    std::map<QString, FileData> _data;      // <file name, tracks data>
+    FileData _data;
 };
 
 // scoped setter of current track
@@ -284,32 +267,6 @@ public:
 private:
     Data& _opers;
     int _oldValue;
-    // disallow heap allocation - for stack-only usage
-    void* operator new(size_t);                 // standard new
-    void* operator new(size_t, void*);          // placement new
-    void* operator new[](size_t);               // array new
-    void* operator new[](size_t, void*);        // placement array new
-};
-
-// scoped setter of current MIDI file
-class CurrentMidiFileSetter
-{
-public:
-    CurrentMidiFileSetter(Data& opers, const QString& fileName)
-        : _opers(opers)
-    {
-        _oldValue = _opers._currentMidiFile;
-        _opers._currentMidiFile = fileName;
-    }
-
-    ~CurrentMidiFileSetter()
-    {
-        _opers._currentMidiFile = _oldValue;
-    }
-
-private:
-    Data& _opers;
-    QString _oldValue;
     // disallow heap allocation - for stack-only usage
     void* operator new(size_t);                 // standard new
     void* operator new(size_t, void*);          // placement new
